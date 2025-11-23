@@ -31,6 +31,321 @@
 
 .text
 
+.globl main
+
+main:
+	addi $sp, $sp, -36
+	sw $s0, 0($sp)
+	sw $s1, 4($sp)
+	sw $s2, 8($sp)
+	sw $s3, 12($sp)
+	sw $s4, 16($sp)
+	sw $s5, 20($sp)
+	sw $s6, 24($sp)
+	sw $s7, 28($sp)
+	sw $ra, 32($sp)
+
+loop_pedir_tamano:
+	li $v0, 4
+	la $a0, msg_pedir_casillas
+	syscall
+	li $v0, 5
+	syscall
+	move $s0, $v0
+	li $t2, 20
+	blt $s0, $t2, loop_pedir_tamano
+	li $t2, 120
+	bgt $s0, $t2, loop_pedir_tamano
+
+	sll $a0, $s0, 2
+	li $v0, 9
+	syscall
+	move $s1, $v0
+	move $a0, $s1
+	move $a1, $s0
+	jal llenar_tablero
+	move $a0, $s1
+	move $a1, $s0
+	jal colocar_tesoros
+
+	li $s2, 0
+	li $s3, 0
+	li $s4, 0
+	li $s5, 0
+	li $s6, 0
+	li $s7, 0
+	li $t0, 1
+	li $t1, 3
+
+loop_principal:
+	bge $s2, $s0, fin_loop_principal
+	bge $s3, $s0, fin_loop_principal
+	bge $s6, $t1, fin_loop_principal
+	bge $s7, $t1, fin_loop_principal
+	bne $t0, 1, turno_principal_maquina
+
+turno_principal_jugador:
+	li $v0, 4
+	la $a0, titulo_turno_jugador
+	syscall
+	jal obtener_dado_jugador
+	move $t2, $v0
+	li $v0, 4
+	la $a0, msg_dado_jugador
+	syscall
+	li $v0, 1
+	move $a0, $t2
+	syscall
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	add $s2, $s2, $t2
+	bge $s2, $s0, finalizo_jugador_principal
+	move $a0, $s1
+	move $a1, $s2
+	addi $a2, $sp, 16
+	addi $a3, $sp, 24
+	sw $s4, 16($sp)
+	sw $s6, 24($sp)
+	jal actualizar_datos
+	lw $s4, 16($sp)
+	lw $s6, 24($sp)
+	li $t0, 0
+	j mostrar_estado_general
+
+finalizo_jugador_principal:
+	li $v0, 4
+	la $a0, msg_jugador_finalizo
+	syscall
+	li $t0, 0
+	j mostrar_estado_general
+
+turno_principal_maquina:
+	li $v0, 4
+	la $a0, titulo_turno_maquina
+	syscall
+	li $v0, 42
+	li $a0, 0
+	li $a1, 6
+	syscall
+	addi $t2, $a0, 1    # $t2 = random entre 1 y 6
+	li $v0, 4
+	la $a0, msg_dado_maquina
+	syscall
+	li $v0, 1
+	move $a0, $t2
+	syscall
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	add $s3, $s3, $t2
+	bge $s3, $s0, finalizo_maquina_principal
+	move $a0, $s1
+	move $a1, $s3
+	addi $a2, $sp, 20
+	addi $a3, $sp, 28
+	sw $s5, 20($sp)
+	sw $s7, 28($sp)
+	jal actualizar_datos
+	lw $s5, 20($sp)
+	lw $s7, 28($sp)
+	li $t0, 1
+	j mostrar_estado_general
+
+finalizo_maquina_principal:
+	li $v0, 4
+	la $a0, msg_maquina_finalizo
+	syscall
+	li $t0, 1
+	j mostrar_estado_general
+
+mostrar_estado_general:
+	li $v0, 4
+	la $a0, titulo_estado_actual
+	syscall
+
+	li $v0, 4
+	la $a0, msg_estado_jugador
+	syscall
+	li $v0, 1
+	move $a0, $s2
+	syscall
+	li $v0, 4
+	la $a0, msg_tesoros
+	syscall
+	li $v0, 1
+	move $a0, $s6
+	syscall
+	li $v0, 4
+	la $a0, msg_dinero
+	syscall
+	li $v0, 1
+	move $a0, $s4
+	syscall
+
+	li $v0, 4
+	la $a0, msg_estado_maquina
+	syscall
+	li $v0, 1
+	move $a0, $s3
+	syscall
+	li $v0, 4
+	la $a0, msg_tesoros
+	syscall
+	li $v0, 1
+	move $a0, $s7
+	syscall
+	li $v0, 4
+	la $a0, msg_dinero
+	syscall
+	li $v0, 1
+	move $a0, $s5
+	syscall
+
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	j loop_principal
+
+fin_loop_principal:
+
+turno_extra_jugador:
+	bge $s2, $s0, fin_turno_extra_jugador
+	bge $s6, $t1, fin_juego
+	bge $s7, $t1, fin_juego
+	li $v0, 4
+	la $a0, titulo_extra_jugador
+	syscall
+	jal obtener_dado_jugador
+	move $t2, $v0
+	li $v0, 4
+	la $a0, msg_dado_jugador
+	syscall
+	li $v0, 1
+	move $a0, $t2
+	syscall
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	add $s2, $s2, $t2
+	bge $s2, $s0, finalizo_extra_jugador
+	move $a0, $s1
+	move $a1, $s2
+	addi $a2, $sp, 16
+	addi $a3, $sp, 24
+	sw $s4, 16($sp)
+	sw $s6, 24($sp)
+	jal actualizar_datos
+	lw $s4, 16($sp)
+	lw $s6, 24($sp)
+	li $v0, 4
+	la $a0, msg_estado_jugador
+	syscall
+	li $v0, 1
+	move $a0, $s2
+	syscall
+	li $v0, 4
+	la $a0, msg_tesoros
+	syscall
+	li $v0, 1
+	move $a0, $s6
+	syscall
+	li $v0, 4
+	la $a0, msg_dinero
+	syscall
+	li $v0, 1
+	move $a0, $s4
+	syscall
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	j turno_extra_jugador
+
+finalizo_extra_jugador:
+	li $v0, 4
+	la $a0, msg_jugador_finalizo
+	syscall
+
+fin_turno_extra_jugador:
+
+turno_extra_maquina:
+	bge $s3, $s0, fin_juego
+	bge $s6, $t1, fin_juego
+	bge $s7, $t1, fin_juego
+	li $v0, 4
+	la $a0, titulo_extra_maquina
+	syscall
+	li $v0, 42
+	li $a0, 0
+	li $a1, 6
+	syscall
+	addi $t2, $a0, 1
+	li $v0, 4
+	la $a0, msg_dado_maquina
+	syscall
+	li $v0, 1
+	move $a0, $t2
+	syscall
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	add $s3, $s3, $t2
+	bge $s3, $s0, finalizo_extra_maquina
+	move $a0, $s1
+	move $a1, $s3
+	addi $a2, $sp, 20
+	addi $a3, $sp, 28
+	sw $s5, 20($sp)
+	sw $s7, 28($sp)
+	jal actualizar_datos
+	lw $s5, 20($sp)
+	lw $s7, 28($sp)
+	li $v0, 4
+	la $a0, msg_estado_maquina
+	syscall
+	li $v0, 1
+	move $a0, $s3
+	syscall
+	li $v0, 4
+	la $a0, msg_tesoros
+	syscall
+	li $v0, 1
+	move $a0, $s7
+	syscall
+	li $v0, 4
+	la $a0, msg_dinero
+	syscall
+	li $v0, 1
+	move $a0, $s5
+	syscall
+	li $v0, 4
+	la $a0, salto_linea
+	syscall
+	j turno_extra_maquina
+
+finalizo_extra_maquina:
+	li $v0, 4
+	la $a0, msg_maquina_finalizo
+	syscall
+
+fin_juego:
+	move $a0, $s6
+	move $a1, $s7
+	addi $a2, $sp, 16
+	addi $a3, $sp, 20
+	jal mostrar_resultados
+	lw $s0, 0($sp)
+	lw $s1, 4($sp)
+	lw $s2, 8($sp)
+	lw $s3, 12($sp)
+	lw $s4, 16($sp)
+	lw $s5, 20($sp)
+	lw $s6, 24($sp)
+	lw $s7, 28($sp)
+	lw $ra, 32($sp)
+	addi $sp, $sp, 36
+	li $v0, 10
+	syscall
 
 llenar_tablero:
 	addi $sp, $sp, -8
@@ -263,5 +578,3 @@ imprimir_cantidades_finales:
 	lw $ra, 16($sp)
 	addi $sp, $sp, 20
 	jr $ra
-
-

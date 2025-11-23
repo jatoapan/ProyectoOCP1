@@ -46,7 +46,7 @@ void actualizar_datos(int *tablero, int posicion_actual, int *dinero, int *tesor
     }
 }
 
-determinar_ganador(int tesoros_jugador, int tesoros_maquina, int dinero_jugador, int dinero_maquina) {
+int determinar_ganador(int tesoros_jugador, int tesoros_maquina, int dinero_jugador, int dinero_maquina) {
     int meta_tesoros = 3;
     if (tesoros_jugador >= meta_tesoros) return 1;
     if (tesoros_maquina >= meta_tesoros) return 0;
