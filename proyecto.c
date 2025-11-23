@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 void llenar_tablero(int *tablero, int cantidad_casillas) { 
     int dinero_minimo = 10;
@@ -38,11 +39,11 @@ void actualizar_datos(int *tablero, int posicion_actual, int *dinero, int *tesor
     int valor_encontrado = tablero[posicion_actual];
     tablero[posicion_actual] = 0;
     if (valor_encontrado == valor_tesoro) { 
-        *dinero += 1;
-        printf(" -> ¡Genial! Se encontró un TESORO escondido en la casilla %d.\n", posicion_actual);
+        *tesoros += 1;
+        printf(" -> Genial! Se encontro un TESORO escondido en la casilla %d.\n", posicion_actual);
     } else {
-        *tesoros += valor_encontrado;
-        printf(" -> Se recogió dinero: $%d en la casilla %d.\n", valor_encontrado, posicion_actual);
+        *dinero += valor_encontrado;
+        printf(" -> Se recogio dinero: $%d en la casilla %d.\n", valor_encontrado, posicion_actual);
     }
 }
 
@@ -65,7 +66,7 @@ void mostrar_resultados(int tesoros_jugador, int tesoros_maquina, int *dinero_ju
     int es_ganador_jugador = determinar_ganador(tesoros_jugador, tesoros_maquina, *dinero_jugador, *dinero_maquina);
     int dinero_total = *dinero_jugador + *dinero_maquina;
     if (es_ganador_jugador) {
-        printf("\n¡FELICIDADES JUGADOR! Has ganado el juego.\n");
+        printf("\nFELICIDADES JUGADOR! Has ganado el juego.\n");
         *dinero_jugador = dinero_total; 
         *dinero_maquina = 0;
     } else {
@@ -82,7 +83,7 @@ int main() {
     int numero_casillas = 0;
     
     while (numero_casillas < 20 || numero_casillas > 120) {
-        printf("Ingrese el tamaño del tablero (entre 20 y 120 casillas): ");
+        printf("Ingrese el tamano del tablero (entre 20 y 120 casillas): ");
         scanf("%d", &numero_casillas);
     }
     
@@ -111,7 +112,7 @@ int main() {
             posicion_jugador += valor_dado;
             
             if (posicion_jugador >= numero_casillas) { 
-                printf("¡El Jugador llego al final del tablero!\n"); 
+                printf("El Jugador llego al final del tablero!\n"); 
                 es_turno_jugador = 0; 
                 break; 
             }
@@ -125,7 +126,7 @@ int main() {
             posicion_maquina += valor_dado;
             
             if (posicion_maquina >= numero_casillas) { 
-                printf("¡La Maquina llego al final del tablero!\n"); 
+                printf("La Maquina llego al final del tablero!\n"); 
                 es_turno_jugador = 1; 
                 break; 
             }
@@ -146,7 +147,7 @@ int main() {
         posicion_jugador += valor_dado;
         
         if (posicion_jugador >= numero_casillas) {
-             printf("¡El Jugador llego al final del tablero!\n"); 
+             printf("El Jugador llego al final del tablero!\n"); 
              break;
         }
         
@@ -161,7 +162,7 @@ int main() {
         posicion_maquina += valor_dado;
         
         if (posicion_maquina >= numero_casillas) {
-            printf("¡La Maquina llego al final del tablero!\n");
+            printf("La Maquina llego al final del tablero!\n");
             break;
         }
         
@@ -172,5 +173,6 @@ int main() {
     mostrar_resultados(tesoros_jugador, tesoros_maquina, &dinero_jugador, &dinero_maquina);
 
     free(tablero);
+    sleep(5);
     return 0;
 }
